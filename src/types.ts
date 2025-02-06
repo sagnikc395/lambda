@@ -1,4 +1,4 @@
-type Variable = string;
+export type Variable = string;
 
 //from the definition of the lambda calculas
 export type LambdaTerm =
