@@ -29,3 +29,23 @@ export function substitute(
   }
 }
 
+export function evaluate(term: LambdaTerm): LambdaTerm {
+  switch (term.type) {
+    case "variable":
+      return term;
+    case "abstraction":
+      return {
+        type: "abstraction",
+        param: term.param,
+        body: evaluate(term.body),
+      };
+    case "application":
+      const func = evaluate(term.func);
+      const arg = evaluate(term.arg);
+      if (func.type === "abstraction") {
+        return evaluate(substitute(func.body, func.param, arg));
+      } else {
+        return { type: "application", func, arg };
+      }
+  }
+}
