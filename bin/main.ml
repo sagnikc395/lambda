@@ -27,6 +27,35 @@ module Expr = struct
     | Application of { funct : expr; argument : expr }
 end
 
+module Infer = struct 
+  open Typ 
+  open Expr 
+
+  let rec infer context expr = 
+    match expr with 
+    | Int _ -> TInt 
+    | Variable name -> (
+      match Context.find_opt name context with 
+      | Some typ -> typ 
+      | None -> raise Type_error
+    )
+    | Abstraction {param; param_typ; body} -> 
+      let context = Context.add param param_type context in 
+      let body_typ = infer context body in 
+      TArrow {param_typ; body_typ}
+    | Application {funct; argument} -> (
+      let funct_typ = infer context funct in
+        let argument_typ = infer context argument in
+        match funct_typ with
+        | TArrow { param_typ; body_typ } when Typ.equal param_typ argument_typ
+          ->
+            body_typ
+        | _ -> raise Type_error
+    )
+
+end 
+
+
 
 
 let () = print_endline "Hello, World!"
