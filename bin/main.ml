@@ -1,6 +1,6 @@
-module Context = Map.make (String)
+module Context = Map.Make (String)
 
-expection Type_error 
+exception Type_error 
 
 module Typ = struct 
   type typ = TArrow of {param_typ: typ; body_typ: typ} | TInt 
@@ -40,7 +40,7 @@ module Infer = struct
       | None -> raise Type_error
     )
     | Abstraction {param; param_typ; body} -> 
-      let context = Context.add param param_type context in 
+      let context = Context.add param param_typ context in 
       let body_typ = infer context body in 
       TArrow {param_typ; body_typ}
     | Application {funct; argument} -> (
