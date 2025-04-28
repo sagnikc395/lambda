@@ -55,7 +55,39 @@ module Infer = struct
 
 end 
 
+module Value = struct 
+  open Expr 
+  type value = 
+  | VInt of int 
+  | VClosure of { context: value Context.t; param: string; body: expr}
+  | VNative of (value -> value)
 
+  let value_pp fmt value = 
+    match value with 
+    | VInt n -> Format.fprintf fmt "VInt %d" n 
+    | VClosure _ -> Format.fprintf fmt "VClosure"
+    | VNative _ -> Format.fprintf fmt "VNative"
+  end 
+
+module Interp = struct 
+  open Expr 
+  open Value 
+
+  let rec interp context expr = 
+    match expr with 
+    | Int n -> VInt n 
+    | Variable name -> Context.find name context 
+    | Abstraction { param; param_typ = _; body} -> 
+      VClosure { context; param; body}
+    | Application { funct; argument} -> (
+      let argument = interp context argument in 
+      match interp context funct with 
+      | VClosure { context; param; body} -> 
+      interp (Context.add param argument context) body 
+      | VNative f -> f argument 
+      | VInt _ -> raise Type_error
+    )
+end 
 
 
 let () = print_endline "Hello, World!"
